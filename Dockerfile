@@ -5,6 +5,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends nginx gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
+RUN mkdir -p /etc/nginx/templates /gmapsdata \
+    && rm -f /etc/nginx/sites-enabled/default
+
 COPY render/nginx.conf.template /etc/nginx/templates/scraper.conf.template
 COPY render/start.sh /usr/local/bin/start-render.sh
 
