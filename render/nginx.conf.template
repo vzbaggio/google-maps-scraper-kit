@@ -1,0 +1,38 @@
+map_hash_bucket_size 128;
+
+map $http_x_api_key $is_authorized {
+    default 0;
+    "${SCRAPER_API_KEY}" 1;
+}
+
+server {
+    listen ${PORT};
+    server_name _;
+
+    client_max_body_size 50m;
+    access_log off;
+
+    location = /healthz {
+        default_type text/plain;
+        return 200 "ok";
+    }
+
+    location / {
+        if ($is_authorized = 0) {
+            return 401;
+        }
+
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-API-Key "";
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+
+        proxy_buffering off;
+    }
+}
